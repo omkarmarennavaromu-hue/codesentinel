@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CodeSentinel AI — Elite Code Intelligence</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #020408;
+      --surface: #060d14;
+      --panel: #0a1520;
+      --border: #0ff3;
+      --accent: #00ffe7;
+      --accent2: #ff003c;
+      --accent3: #7b00ff;
+      --text: #c8e6f5;
+      --muted: #4a7a9b;
+      --glow: 0 0 20px #00ffe740, 0 0 60px #00ffe715;
+      --glow-red: 0 0 20px #ff003c40, 0 0 60px #ff003c15;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Rajdhani', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      overflow-x: hidden;
+      cursor: none;
+    }
+
+    /* CUSTOM CURSOR */
+    .cursor {
+      position: fixed; width: 12px; height: 12px;
+      background: var(--accent); border-radius: 50%;
+      pointer-events: none; z-index: 9999;
+      box-shadow: var(--glow);
+      transition: transform 0.1s;
+    }
+    .cursor-trail {
+      position: fixed; width: 30px; height: 30px;
+      border: 1px solid var(--accent); border-radius: 50%;
+      pointer-events: none; z-index: 9998;
+      transition: all 0.15s ease;
+      opacity: 0.5;
+    }
+
+    /* SCANLINE OVERLAY */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,255,231,0.015) 2px, rgba(0,255,231,0.015) 4px);
+      pointer-events: none; z-index: 1000;
+    }
+
+    /* NOISE TEXTURE */
+    body::after {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none; z-index: 999; opacity: 0.4;
+    }
+
+    /* NAV */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 500;
+      padding: 18px 60px;
+      display: flex; justify-content: space-between; align-items: center;
+      background: linear-gradient(180deg, #020408ee, transparent);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo {
+      font-family: 'Orbitron', monospace;
+      font-size: 1.1rem; font-weight: 900;
+      color: var(--accent);
+      text-shadow: var(--glow);
+      letter-spacing: 3px;
+    }
+    .nav-logo span { color: var(--accent2); }
+    nav ul { display: flex; gap: 40px; list-style: none; }
+    nav ul a {
+      font-family: 'Share Tech Mono', monospace;
+      color: var(--muted); text-decoration: none;
+      font-size: 0.85rem; letter-spacing: 2px;
+      transition: color 0.3s;
+    }
+    nav ul a:hover { color: var(--accent); text-shadow: var(--glow); }
+
+    /* HERO */
+    .hero {
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+      justify-content: center; align-items: center;
+      text-align: center;
+      padding: 120px 40px 60px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* GRID BACKGROUND */
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(var(--border) 1px, transparent 1px),
+        linear-gradient(90deg, var(--border) 1px, transparent 1px);
+      background-size: 60px 60px;
+      mask-image: radial-gradient(ellipse 80% 60% at 50% 50%, black 40%, transparent 100%);
+    }
+
+    /* GLOWING ORBS */
+    .orb {
+      position: absolute; border-radius: 50%;
+      filter: blur(100px); pointer-events: none;
+    }
+    .orb-1 { width: 500px; height: 500px; background: #00ffe710; top: -100px; left: -100px; }
+    .orb-2 { width: 400px; height: 400px; background: #ff003c08; bottom: 0; right: -100px; }
+    .orb-3 { width: 300px; height: 300px; background: #7b00ff0a; top: 50%; left: 50%; transform: translate(-50%,-50%); }
+
+    .hero-badge {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.7rem; letter-spacing: 4px;
+      color: var(--accent); border: 1px solid var(--accent);
+      padding: 6px 20px; margin-bottom: 30px;
+      background: #00ffe708;
+      animation: pulse-border 2s infinite;
+    }
+    @keyframes pulse-border {
+      0%, 100% { box-shadow: 0 0 0 0 #00ffe740; }
+      50% { box-shadow: 0 0 0 6px #00ffe710; }
+    }
+
+    .hero h1 {
+      font-family: 'Orbitron', monospace;
+      font-size: clamp(2.5rem, 6vw, 5.5rem);
+      font-weight: 900;
+      line-height: 1.05;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero h1 .line1 {
+      color: #fff;
+      display: block;
+      animation: glitch 4s infinite;
+    }
+    .hero h1 .line2 {
+      color: var(--accent);
+      text-shadow: var(--glow);
+      display: block;
+    }
+
+    @keyframes glitch {
+      0%, 90%, 100% { transform: translate(0); }
+      91% { transform: translate(-3px, 1px); clip-path: inset(10% 0 60% 0); }
+      92% { transform: translate(3px, -1px); clip-path: inset(60% 0 10% 0); }
+      93% { transform: translate(0); clip-path: none; }
+    }
+
+    .hero-sub {
+      font-size: 1.2rem; font-weight: 300;
+      color: var(--muted); max-width: 620px;
+      letter-spacing: 1px; line-height: 1.7;
+      margin-bottom: 50px;
+    }
+    .hero-sub strong { color: var(--text); font-weight: 600; }
+
+    .cta-group { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
+
+    .btn-primary {
+      font-family: 'Orbitron', monospace;
+      font-size: 0.85rem; font-weight: 700;
+      letter-spacing: 3px;
+      padding: 16px 40px;
+      background: var(--accent); color: #000;
+      border: none; cursor: none;
+      position: relative; overflow: hidden;
+      transition: all 0.3s;
+      text-decoration: none;
+      display: inline-block;
+    }
+    .btn-primary::before {
+      content: ''; position: absolute; inset: 0;
+      background: #fff; transform: translateX(-105%) skewX(-15deg);
+      transition: transform 0.4s;
+    }
+    .btn-primary:hover::before { transform: translateX(105%) skewX(-15deg); }
+    .btn-primary span { position: relative; z-index: 1; }
+    .btn-primary:hover { box-shadow: var(--glow); }
+
+    .btn-secondary {
+      font-family: 'Orbitron', monospace;
+      font-size: 0.85rem; font-weight: 700;
+      letter-spacing: 3px;
+      padding: 16px 40px;
+      background: transparent; color: var(--accent);
+      border: 1px solid var(--accent);
+      cursor: none; text-decoration: none;
+      display: inline-block; transition: all 0.3s;
+    }
+    .btn-secondary:hover { background: #00ffe710; box-shadow: var(--glow); }
+
+    /* STATS BAR */
+    .stats-bar {
+      width: 100%;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+      padding: 25px 0;
+      display: flex; justify-content: center; gap: 0;
+      overflow: hidden;
+    }
+    .stat-item {
+      padding: 0 60px;
+      border-right: 1px solid var(--border);
+      text-align: center;
+    }
+    .stat-item:last-child { border-right: none; }
+    .stat-num {
+      font-family: 'Orbitron', monospace;
+      font-size: 1.8rem; font-weight: 900;
+      color: var(--accent); text-shadow: var(--glow);
+    }
+    .stat-label {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.7rem; letter-spacing: 2px;
+      color: var(--muted); margin-top: 4px;
+    }
+
+    /* FEATURES SECTION */
+    .section {
+      padding: 120px 60px;
+      max-width: 1300px;
+      margin: 0 auto;
+    }
+
+    .section-label {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.7rem; letter-spacing: 5px;
+      color: var(--accent2); margin-bottom: 15px;
+    }
+    .section-title {
+      font-family: 'Orbitron', monospace;
+      font-size: clamp(1.8rem, 3vw, 2.8rem);
+      font-weight: 900; color: #fff;
+      margin-bottom: 15px;
+    }
+    .section-title em { color: var(--accent); font-style: normal; }
+    .section-desc {
+      font-size: 1.1rem; color: var(--muted);
+      max-width: 540px; line-height: 1.7;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2px;
+      margin-top: 70px;
+      border: 1px solid var(--border);
+    }
+
+    .feature-card {
+      background: var(--surface);
+      padding: 40px 35px;
+      border: 1px solid #0ff1;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.4s;
+    }
+    .feature-card::before {
+      content: attr(data-num);
+      position: absolute; top: -10px; right: 20px;
+      font-family: 'Orbitron', monospace;
+      font-size: 5rem; font-weight: 900;
+      color: var(--accent); opacity: 0.04;
+      line-height: 1;
+    }
+    .feature-card::after {
+      content: '';
+      position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, var(--accent), transparent);
+      transform: scaleX(0); transform-origin: left;
+      transition: transform 0.4s;
+    }
+    .feature-card:hover { background: var(--panel); transform: translateY(-3px); }
+    .feature-card:hover::after { transform: scaleX(1); }
+
+    .feature-icon {
+      width: 50px; height: 50px;
+      border: 1px solid var(--accent);
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 25px;
+      font-size: 1.4rem;
+      color: var(--accent);
+      background: #00ffe708;
+    }
+    .feature-card h3 {
+      font-family: 'Orbitron', monospace;
+      font-size: 0.9rem; font-weight: 700;
+      letter-spacing: 2px; color: #fff;
+      margin-bottom: 12px;
+    }
+    .feature-card p {
+      font-size: 0.95rem; color: var(--muted);
+      line-height: 1.6;
+    }
+
+    /* LANGUAGES */
+    .languages-section {
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      padding: 80px 60px;
+      text-align: center;
+    }
+    .lang-grid {
+      display: flex; justify-content: center; gap: 20px;
+      flex-wrap: wrap; margin-top: 50px;
+    }
+    .lang-pill {
+      font-family: 'Share Tech Mono', monospace;
+      padding: 14px 32px;
+      border: 1px solid var(--border);
+      color: var(--muted); font-size: 0.9rem;
+      letter-spacing: 2px;
+      background: var(--panel);
+      transition: all 0.3s;
+      position: relative; overflow: hidden;
+    }
+    .lang-pill::before {
+      content: ''; position: absolute; inset: 0;
+      background: var(--accent); opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .lang-pill span { position: relative; z-index: 1; }
+    .lang-pill:hover { color: #000; border-color: var(--accent); box-shadow: var(--glow); }
+    .lang-pill:hover::before { opacity: 1; }
+
+    /* HOW IT WORKS */
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 30px;
+      margin-top: 70px;
+    }
+    .step {
+      position: relative;
+      padding: 35px 25px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+    }
+    .step::after {
+      content: '→';
+      position: absolute; right: -22px; top: 50%;
+      transform: translateY(-50%);
+      font-family: 'Orbitron', monospace;
+      color: var(--accent); font-size: 1.2rem;
+      z-index: 10;
+    }
+    .step:last-child::after { display: none; }
+    .step-num {
+      font-family: 'Orbitron', monospace;
+      font-size: 2.5rem; font-weight: 900;
+      color: var(--accent); opacity: 0.3;
+      margin-bottom: 15px;
+    }
+    .step h4 {
+      font-family: 'Orbitron', monospace;
+      font-size: 0.8rem; letter-spacing: 2px;
+      color: #fff; margin-bottom: 10px;
+    }
+    .step p { font-size: 0.9rem; color: var(--muted); line-height: 1.6; }
+
+    /* TERMINAL DEMO */
+    .terminal-section {
+      padding: 120px 60px;
+      max-width: 1300px; margin: 0 auto;
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 60px; align-items: center;
+    }
+    .terminal {
+      background: #020810;
+      border: 1px solid var(--border);
+      font-family: 'Share Tech Mono', monospace;
+      overflow: hidden;
+      box-shadow: var(--glow);
+    }
+    .terminal-bar {
+      background: var(--panel);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 20px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .dot { width: 12px; height: 12px; border-radius: 50%; }
+    .dot-r { background: #ff5f57; }
+    .dot-y { background: #ffbd2e; }
+    .dot-g { background: #28ca41; }
+    .terminal-title {
+      font-size: 0.75rem; color: var(--muted);
+      margin-left: 10px; letter-spacing: 2px;
+    }
+    .terminal-body { padding: 25px; font-size: 0.82rem; line-height: 1.9; }
+    .t-prompt { color: var(--accent); }
+    .t-comment { color: #445; }
+    .t-string { color: #e06c75; }
+    .t-key { color: #61afef; }
+    .t-val { color: #98c379; }
+    .t-warn { color: #e5c07b; }
+    .t-err { color: var(--accent2); }
+    .t-score { color: var(--accent); font-size: 1rem; font-weight: bold; text-shadow: var(--glow); }
+    .blink { animation: blink 1s step-end infinite; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+    /* FOUNDER CARD */
+    .founder-section {
+      padding: 80px 60px 100px;
+      display: flex; justify-content: center;
+      background: var(--bg);
+      position: relative;
+    }
+    .founder-card {
+      max-width: 700px; width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--accent);
+      padding: 50px 55px;
+      position: relative;
+      text-align: center;
+      animation: glow-card 3s ease-in-out infinite;
+    }
+    @keyframes glow-card {
+      0%, 100% { box-shadow: 0 0 30px #00ffe720, 0 0 80px #00ffe710; }
+      50% { box-shadow: 0 0 50px #00ffe740, 0 0 120px #00ffe720, 0 0 200px #00ffe708; }
+    }
+    .founder-card::before {
+      content: 'BUILT BY';
+      position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.65rem; letter-spacing: 5px;
+      color: var(--accent); background: var(--surface);
+      padding: 0 15px;
+    }
+    .founder-card::after {
+      content: '';
+      position: absolute; inset: 3px;
+      border: 1px solid #00ffe715;
+      pointer-events: none;
+    }
+    .founder-avatar {
+      width: 90px; height: 90px;
+      border-radius: 50%;
+      border: 2px solid var(--accent);
+      margin: 0 auto 25px;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Orbitron', monospace;
+      font-size: 1.8rem; font-weight: 900;
+      color: var(--accent);
+      background: #00ffe710;
+      box-shadow: var(--glow);
+    }
+    .founder-name {
+      font-family: 'Orbitron', monospace;
+      font-size: 1.5rem; font-weight: 900;
+      color: #fff; letter-spacing: 3px;
+      margin-bottom: 8px;
+      text-shadow: var(--glow);
+    }
+    .founder-title {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.8rem; letter-spacing: 3px;
+      color: var(--accent); margin-bottom: 20px;
+    }
+    .founder-desc {
+      font-size: 1rem; color: var(--muted);
+      line-height: 1.7; max-width: 480px; margin: 0 auto;
+    }
+    .founder-tags {
+      display: flex; justify-content: center; gap: 10px;
+      flex-wrap: wrap; margin-top: 25px;
+    }
+    .tag {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.7rem; letter-spacing: 2px;
+      padding: 6px 16px;
+      border: 1px solid var(--border);
+      color: var(--muted);
+    }
+
+    /* FOOTER */
+    footer {
+      border-top: 1px solid var(--border);
+      background: var(--surface);
+      padding: 30px 60px;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .footer-logo {
+      font-family: 'Orbitron', monospace;
+      font-size: 0.9rem; font-weight: 900;
+      color: var(--accent); letter-spacing: 3px;
+    }
+    .footer-copy {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.75rem; color: var(--muted);
+      letter-spacing: 1px;
+    }
+
+    /* TICKER */
+    .ticker {
+      background: var(--accent); color: #000;
+      padding: 10px 0; overflow: hidden;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.75rem; letter-spacing: 2px;
+      white-space: nowrap;
+    }
+    .ticker-inner {
+      display: inline-block;
+      animation: ticker 30s linear infinite;
+    }
+    @keyframes ticker {
+      0% { transform: translateX(100vw); }
+      100% { transform: translateX(-100%); }
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 900px) {
+      nav { padding: 15px 20px; }
+      nav ul { display: none; }
+      .section { padding: 60px 20px; }
+      .features-grid { grid-template-columns: 1fr; }
+      .steps { grid-template-columns: 1fr 1fr; }
+      .step::after { display: none; }
+      .terminal-section { grid-template-columns: 1fr; padding: 60px 20px; }
+      .stat-item { padding: 0 25px; }
+      .hero h1 { font-size: 2.2rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="cursor" id="cursor"></div>
+  <div class="cursor-trail" id="cursorTrail"></div>
+
+  <nav>
+    <div class="nav-logo">CODE<span>SENTINEL</span></div>
+    <ul>
+      <li><a href="#features">FEATURES</a></li>
+      <li><a href="#languages">LANGUAGES</a></li>
+      <li><a href="#how">HOW IT WORKS</a></li>
+      <li><a href="app.html">LAUNCH APP</a></li>
+    </ul>
+  </nav>
+
+  <div class="ticker">
+    <span class="ticker-inner">
+      ⬡ BUG DETECTION &nbsp;&nbsp; ⬡ TIME COMPLEXITY ANALYSIS &nbsp;&nbsp; ⬡ SECURITY VULNERABILITY SCAN &nbsp;&nbsp; ⬡ AI CODE OPTIMIZATION &nbsp;&nbsp; ⬡ REAL-TIME REVIEW &nbsp;&nbsp; ⬡ 5 LANGUAGES SUPPORTED &nbsp;&nbsp; ⬡ POWERED BY QWEN AI &nbsp;&nbsp; ⬡ BUG DETECTION &nbsp;&nbsp; ⬡ TIME COMPLEXITY ANALYSIS &nbsp;&nbsp; ⬡ SECURITY VULNERABILITY SCAN &nbsp;&nbsp; ⬡ AI CODE OPTIMIZATION &nbsp;&nbsp;
+    </span>
+  </div>
+
+  <section class="hero">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+
+    <div class="hero-badge">// AI-POWERED CODE INTELLIGENCE //</div>
+
+    <h1>
+      <span class="line1">ELITE CODE</span>
+      <span class="line2">SENTINEL AI</span>
+    </h1>
+
+    <p class="hero-sub">
+      Military-grade code analysis in <strong>milliseconds</strong>. Detect bugs, security flaws, complexity issues, and get an <strong>optimized version</strong> — all before your code ever runs.
+    </p>
+
+    <div class="cta-group">
+      <a href="app.html" class="btn-primary"><span>LAUNCH REVIEWER →</span></a>
+      <a href="#features" class="btn-secondary">SEE FEATURES</a>
+    </div>
+  </section>
+
+  <div class="stats-bar">
+    <div class="stat-item">
+      <div class="stat-num">5</div>
+      <div class="stat-label">LANGUAGES</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">6</div>
+      <div class="stat-label">REVIEW METRICS</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">&lt;3s</div>
+      <div class="stat-label">RESPONSE TIME</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">AI</div>
+      <div class="stat-label">POWERED BY QWEN</div>
+    </div>
+  </div>
+
+  <!-- FEATURES -->
+  <div id="features" class="section">
+    <div class="section-label">// CAPABILITIES //</div>
+    <h2 class="section-title">Everything Your Code <em>Fears</em></h2>
+    <p class="section-desc">Six layers of analysis running simultaneously. No stone unturned, no bug undetected.</p>
+
+    <div class="features-grid">
+      <div class="feature-card" data-num="01">
+        <div class="feature-icon">🐛</div>
+        <h3>BUG DETECTION</h3>
+        <p>Identifies logical errors, runtime exceptions, null pointers, memory leaks, and off-by-one errors before they reach production.</p>
+      </div>
+      <div class="feature-card" data-num="02">
+        <div class="feature-icon">⚡</div>
+        <h3>COMPLEXITY ANALYSIS</h3>
+        <p>Calculates Big-O time and space complexity. Identifies bottlenecks and suggests algorithmic improvements for performance.</p>
+      </div>
+      <div class="feature-card" data-num="03">
+        <div class="feature-icon">🔐</div>
+        <h3>SECURITY SCAN</h3>
+        <p>Detects SQL injection, XSS vulnerabilities, hardcoded credentials, unsafe inputs, and OWASP top 10 security risks.</p>
+      </div>
+      <div class="feature-card" data-num="04">
+        <div class="feature-icon">🚀</div>
+        <h3>IMPROVEMENTS</h3>
+        <p>Concrete, actionable suggestions to make your code cleaner, faster, and more maintainable following best practices.</p>
+      </div>
+      <div class="feature-card" data-num="05">
+        <div class="feature-icon">✨</div>
+        <h3>OPTIMIZED CODE</h3>
+        <p>Receive a fully rewritten, optimized version of your code — ready to copy, paste, and ship. Better logic, cleaner syntax.</p>
+      </div>
+      <div class="feature-card" data-num="06">
+        <div class="feature-icon">🎯</div>
+        <h3>SCORE /10</h3>
+        <p>An overall quality score across all dimensions — readability, efficiency, security, and correctness. Know exactly where you stand.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- LANGUAGES -->
+  <div id="languages" class="languages-section">
+    <div class="section-label" style="text-align:center">// SUPPORTED LANGUAGES //</div>
+    <h2 class="section-title" style="text-align:center">Write In Any Language. <em>We Speak Them All.</em></h2>
+    <div class="lang-grid">
+      <div class="lang-pill"><span>⚙️ &nbsp; C</span></div>
+      <div class="lang-pill"><span>⚡ &nbsp; C++</span></div>
+      <div class="lang-pill"><span>🐍 &nbsp; PYTHON</span></div>
+      <div class="lang-pill"><span>☕ &nbsp; JAVA</span></div>
+      <div class="lang-pill"><span>🌐 &nbsp; JAVASCRIPT</span></div>
+    </div>
+  </div>
+
+  <!-- HOW IT WORKS -->
+  <div id="how" class="section">
+    <div class="section-label">// PROCESS //</div>
+    <h2 class="section-title">Four Steps to <em>Perfect Code</em></h2>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">01</div>
+        <h4>PASTE CODE</h4>
+        <p>Drop your code in the editor or upload a file directly.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">02</div>
+        <h4>SELECT LANGUAGE</h4>
+        <p>Pick from C, C++, Python, Java, or JavaScript.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">03</div>
+        <h4>AI ANALYSIS</h4>
+        <p>Qwen AI processes your code through 6 analysis layers.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">04</div>
+        <h4>GET RESULTS</h4>
+        <p>Receive bugs, fixes, complexity, security report, and score.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- TERMINAL DEMO -->
+  <section class="terminal-section">
+    <div>
+      <div class="section-label">// LIVE OUTPUT //</div>
+      <h2 class="section-title">Results That <em>Actually Help</em></h2>
+      <p class="section-desc" style="margin-bottom:30px">No vague suggestions. Precise, actionable analysis formatted for engineers who move fast.</p>
+      <a href="app.html" class="btn-primary"><span>TRY IT NOW →</span></a>
+    </div>
+    <div class="terminal">
+      <div class="terminal-bar">
+        <div class="dot dot-r"></div>
+        <div class="dot dot-y"></div>
+        <div class="dot dot-g"></div>
+        <span class="terminal-title">codesentinel_output.json</span>
+      </div>
+      <div class="terminal-body">
+        <div><span class="t-prompt">›</span> <span class="t-comment">// Analyzing Python code...</span></div>
+        <div>&nbsp;</div>
+        <div><span class="t-key">"bugs"</span>: [</div>
+        <div>&nbsp;&nbsp;<span class="t-err">⚠ Line 12: Division by zero risk</span></div>
+        <div>&nbsp;&nbsp;<span class="t-err">⚠ Line 27: Undefined variable 'n'</span></div>
+        <div>],</div>
+        <div>&nbsp;</div>
+        <div><span class="t-key">"complexity"</span>: {</div>
+        <div>&nbsp;&nbsp;<span class="t-string">"time"</span>: <span class="t-val">"O(n²)"</span>,</div>
+        <div>&nbsp;&nbsp;<span class="t-string">"space"</span>: <span class="t-val">"O(n)"</span></div>
+        <div>},</div>
+        <div>&nbsp;</div>
+        <div><span class="t-key">"security"</span>: [</div>
+        <div>&nbsp;&nbsp;<span class="t-warn">⚡ Input not sanitized (Line 5)</span></div>
+        <div>],</div>
+        <div>&nbsp;</div>
+        <div><span class="t-key">"score"</span>: <span class="t-score">7.4 / 10</span></div>
+        <div>&nbsp;</div>
+        <div><span class="t-prompt">›</span> <span class="t-val">Optimized code ready ✓</span> <span class="blink">_</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOUNDER CARD -->
+  <section class="founder-section">
+    <div class="founder-card">
+      <div class="founder-avatar">OR</div>
+      <div class="founder-name">OMKAR R MARENNAVAR</div>
+      <div class="founder-title">// BUILDER & FOUNDER //</div>
+      <p class="founder-desc">
+        PUC student, self-taught developer, and creator of CodeSentinel AI. Built this to help every programmer — from beginner to pro — write cleaner, safer, faster code.
+      </p>
+      <div class="founder-tags">
+        <span class="tag">DEVELOPER</span>
+        <span class="tag">AI BUILDER</span>
+        <span class="tag">PUC STUDENT</span>
+        <span class="tag">PROBLEM SOLVER</span>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="footer-logo">CODESENTINEL AI</div>
+    <div class="footer-copy">© 2025 OMKAR R MARENNAVAR — ALL SYSTEMS OPERATIONAL</div>
+  </footer>
+
+  <script>
+    const cursor = document.getElementById('cursor');
+    const trail = document.getElementById('cursorTrail');
+    let mx = 0, my = 0, tx = 0, ty = 0;
+
+    document.addEventListener('mousemove', e => {
+      mx = e.clientX; my = e.clientY;
+      cursor.style.left = mx - 6 + 'px';
+      cursor.style.top = my - 6 + 'px';
+    });
+
+    function animateTrail() {
+      tx += (mx - tx) * 0.12;
+      ty += (my - ty) * 0.12;
+      trail.style.left = tx - 15 + 'px';
+      trail.style.top = ty - 15 + 'px';
+      requestAnimationFrame(animateTrail);
+    }
+    animateTrail();
+
+    // Intersection observer for fade-ins
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.style.opacity = '1';
+          e.target.style.transform = 'translateY(0)';
+        }
+      });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.feature-card, .step, .stat-item').forEach(el => {
+      el.style.opacity = '0';
+      el.style.transform = 'translateY(30px)';
+      el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+      observer.observe(el);
+    });
+  </script>
+</body>
+</html>
